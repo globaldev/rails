@@ -227,9 +227,9 @@ module ActionController
       end
 
       def decode_credentials(header)
-        Hash[header.to_s.gsub(/^Digest\s+/,'').split(',').map do |pair|
+        HashWithIndifferentAccess[header.to_s.gsub(/^Digest\s+/,'').split(',').map do |pair|
           key, value = pair.split('=', 2)
-          [key.strip.to_sym, value.to_s.gsub(/^"|"$/,'').gsub(/'/, '')]
+          [key.strip, value.to_s.gsub(/^"|"$/,'').delete('\'')]
         end]
       end
 
@@ -426,7 +426,7 @@ module ActionController
       # Returns an Array of [String, Hash] if a token is present.
       # Returns nil if no token is found.
       def token_and_options(request)
-        if header = request.authorization.to_s[/^Token (.*)/]
+        if request.authorization.to_s[/^Token (.*)/]
           values = Hash[$1.split(',').map do |value|
             value.strip!                      # remove any spaces between commas and values
             key, value = value.split(/\=\"?/) # split key=value pairs
